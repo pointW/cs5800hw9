@@ -60,16 +60,14 @@ class BinomialHeap:
             x = x.sibling
         return y
 
-    @staticmethod
-    def merge(h1, h2):
+    def merge(self, h1):
         """
         merge the root list of h1 and h2 into a single linked list sorted by degree
         :param h1: BinomialHeap
-        :param h2: BinomialHeap
         :return: Node
         """
-        p = h1.head
-        q = h2.head
+        p = self.head
+        q = h1.head
         if p is None:
             return q
         elif q is None:
@@ -97,20 +95,17 @@ class BinomialHeap:
             k.sibling = q
         return head
 
-    @staticmethod
-    def union(h1, h2):
+    def union(self, h1):
         """
         unites h1 and h2
         :param h1: BinomialHeap
-        :param h2: BinomialHeap
         :return: BinomialHeap
         """
-        h = BinomialHeap()
-        h.head = BinomialHeap.merge(h1, h2)
-        if h.head is None:
-            return h
+        self.head = self.merge(h1)
+        if self.head is None:
+            return
         prev_x = None
-        x = h.head
+        x = self.head
         next_x = x.sibling
         while next_x is not None:
             if x.degree != next_x.degree or \
@@ -123,30 +118,32 @@ class BinomialHeap:
                     binomial_link(next_x, x)
                 else:
                     if prev_x is None:
-                        h.head = next_x
+                        self.head = next_x
                     else:
                         prev_x.sibling = next_x
                     binomial_link(x, next_x)
                     x = next_x
             next_x = x.sibling
-        return h
+        return
 
-    @staticmethod
-    def insert(h, x):
+    def insert(self, x):
         """
         insert node x into binomial heap h
-        :param h: BinomialHeap
         :param x: Node
         :return: BinomialHeap
         """
         h1 = BinomialHeap(x)
-        return BinomialHeap.union(h, h1)
+        return self.union(h1)
 
-    @staticmethod
-    def extract_min(h):
-        x = h.minimum()
+    def extract_min(self):
+        """
+        extract the node with the minimum key
+        :return: Node
+        """
+        x = self.minimum()
+
         # remove x from the root list of h
-        p = h.head
+        p = self.head
         prev_p = None
         while p is not x:
             if prev_p is None:
@@ -155,10 +152,13 @@ class BinomialHeap:
                 prev_p = prev_p.sibling
             p = p.sibling
         prev_p.sibling = p.sibling
+
         # reverse the order of the linked list of x's children
         x.reverse_child()
+
         h1 = BinomialHeap(x.child)
-        h = BinomialHeap.union(h, h1)
+        self.union(h1)
+        return x
 
 
 class TestHeapMethods(unittest.TestCase):
@@ -174,7 +174,7 @@ class TestHeapMethods(unittest.TestCase):
         node1.sibling = nodes[3]
         h1 = BinomialHeap(nodes[0])
         h2 = BinomialHeap(nodes[1])
-        h = BinomialHeap.merge(h1, h2)
+        h = h1.merge(h2)
         p = h
         self.assertEqual(p.degree, 0)
         p = p.sibling
@@ -209,10 +209,10 @@ class TestHeapMethods(unittest.TestCase):
         n18.sibling = n3
         h1 = BinomialHeap(n12)
         h2 = BinomialHeap(n18)
-        h = BinomialHeap.union(h1, h2)
-        self.assertEqual(h.head.degree, 1)
-        self.assertEqual(h.head.sibling.degree, 3)
-        head = h.head
+        h1.union(h2)
+        self.assertEqual(h1.head.degree, 1)
+        self.assertEqual(h1.head.sibling.degree, 3)
+        head = h1.head
         self.assertEqual(head.key, 12)
         self.assertEqual(head.child.key, 18)
         head_next = head.sibling
@@ -235,6 +235,36 @@ class TestHeapMethods(unittest.TestCase):
         self.assertEqual(p.child.sibling.sibling.sibling.key, 1)
         self.assertEqual(p.child.sibling.sibling.sibling.sibling.key, 0)
         self.assertTrue(p.child.sibling.sibling.sibling.sibling.sibling is None)
+
+    def test_extract(self):
+        n12 = Node(12)
+        n7 = Node(7)
+        n25 = Node(25)
+        binomial_link(n25, n7)
+        n15 = Node(15)
+        n33 = Node(33)
+        n28 = Node(28)
+        n41 = Node(41)
+        binomial_link(n33, n15)
+        binomial_link(n41, n28)
+        binomial_link(n28, n15)
+        n12.sibling = n7
+        n7.sibling = n15
+        n18 = Node(18)
+        n3 = Node(3)
+        n37 = Node(37)
+        binomial_link(n37, n3)
+        n18.sibling = n3
+        h1 = BinomialHeap(n12)
+        h2 = BinomialHeap(n18)
+        h1.union(h2)
+        x = h1.extract_min()
+        self.assertEqual(x.key, 3)
+        self.assertEqual(h1.head.key, 37)
+        self.assertEqual(h1.head.sibling.degree, 3)
+        self.assertEqual(h1.head.sibling.sibling, None)
+        self.assertEqual(h1.head.sibling.child.key, 15)
+        self.assertEqual(h1.head.sibling.child.child.child.key, 41)
 
 
 if __name__ == '__main__':
