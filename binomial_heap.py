@@ -29,9 +29,8 @@ class Node:
 def binomial_link(y, z):
     """
     make y the new head of the linked list of node z's children
-    :param y: Node
-    :param z: Node
-    :return: None
+    :param y: new child head
+    :param z: parent node
     """
     y.p = z
     y.sibling = z.child
@@ -46,7 +45,7 @@ class BinomialHeap:
     def minimum(self):
         """
         return the min node
-        :return: Node
+        :return: node with min key
         """
         x = self.head
         y = x
@@ -62,9 +61,9 @@ class BinomialHeap:
 
     def merge(self, h1):
         """
-        merge the root list of h1 and h2 into a single linked list sorted by degree
-        :param h1: BinomialHeap
-        :return: Node
+        merge the root list of self and h2 into a single linked list sorted by degree
+        :param h1: another heap that will merge with this heap
+        :return: head node of merged linked list sorted by degree
         """
         p = self.head
         q = h1.head
@@ -97,9 +96,8 @@ class BinomialHeap:
 
     def union(self, h1):
         """
-        unites h1 and h2
-        :param h1: BinomialHeap
-        :return: BinomialHeap
+        unites self and h1
+        :param h1: another heap that will union with this heap
         """
         self.head = self.merge(h1)
         if self.head is None:
@@ -129,16 +127,15 @@ class BinomialHeap:
     def insert(self, x):
         """
         insert node x into binomial heap h
-        :param x: Node
-        :return: BinomialHeap
+        :param x: node that will be inserted
         """
         h1 = BinomialHeap(x)
         return self.union(h1)
 
     def extract_min(self):
         """
-        extract the node with the minimum key
-        :return: Node
+        extract the node with the minimum key, and reshape the heap
+        :return: node with minimum key
         """
         x = self.minimum()
 
