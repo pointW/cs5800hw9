@@ -1,4 +1,6 @@
 import unittest
+import sys
+import copy
 
 
 class Node:
@@ -157,6 +159,28 @@ class BinomialHeap:
         self.union(h1)
         return x
 
+    def delete(self, x):
+        self.decrease_key(x, -sys.maxint)
+        self.extract_min()
+
+    @staticmethod
+    def decrease_key(x, k):
+        """
+        decrease x.key to k, k should be smaller than x.key
+        :param x: node that will have k decreased
+        :param k: new key for node x
+        :raise : exception when k > x.key
+        """
+        if k > x.key:
+            raise Exception('new key is greater than current key')
+        x.key = k
+        y = x
+        z = x.p
+        while z is not None and y.key < z.key:
+            y.key, z.key = z.key, y.key
+            y = z
+            z = y.p
+
 
 class TestHeapMethods(unittest.TestCase):
     def test_merge(self):
@@ -186,6 +210,10 @@ class TestHeapMethods(unittest.TestCase):
         self.assertEqual(p.degree, 4)
 
     def test_union(self):
+        # h1:
+        # 12 -> 7 -> 15
+        #      25    28-33
+        #            41
         n12 = Node(12)
         n7 = Node(7)
         n25 = Node(25)
@@ -199,6 +227,9 @@ class TestHeapMethods(unittest.TestCase):
         binomial_link(n28, n15)
         n12.sibling = n7
         n7.sibling = n15
+        # h2:
+        # 18 -> 3
+        #      37
         n18 = Node(18)
         n3 = Node(3)
         n37 = Node(37)
@@ -207,6 +238,11 @@ class TestHeapMethods(unittest.TestCase):
         h1 = BinomialHeap(n12)
         h2 = BinomialHeap(n18)
         h1.union(h2)
+        # new h1
+        # 12 ->  3
+        # 18    15-----7-37
+        #       28-33 25
+        #       41
         self.assertEqual(h1.head.degree, 1)
         self.assertEqual(h1.head.sibling.degree, 3)
         head = h1.head
@@ -234,6 +270,10 @@ class TestHeapMethods(unittest.TestCase):
         self.assertTrue(p.child.sibling.sibling.sibling.sibling.sibling is None)
 
     def test_extract(self):
+        # h1:
+        # 12 -> 7 -> 15
+        #      25    28-33
+        #            41
         n12 = Node(12)
         n7 = Node(7)
         n25 = Node(25)
@@ -247,6 +287,9 @@ class TestHeapMethods(unittest.TestCase):
         binomial_link(n28, n15)
         n12.sibling = n7
         n7.sibling = n15
+        # h2:
+        # 18 -> 3
+        #      37
         n18 = Node(18)
         n3 = Node(3)
         n37 = Node(37)
@@ -255,13 +298,72 @@ class TestHeapMethods(unittest.TestCase):
         h1 = BinomialHeap(n12)
         h2 = BinomialHeap(n18)
         h1.union(h2)
+        # new h1
+        # 12 ->  3
+        # 18    15-----7-37
+        #       28-33 25
+        #       41
         x = h1.extract_min()
+        # new h1
+        # 37 ->  7
+        #       15----12-25
+        #       28-33 18
+        #       41
         self.assertEqual(x.key, 3)
         self.assertEqual(h1.head.key, 37)
         self.assertEqual(h1.head.sibling.degree, 3)
         self.assertEqual(h1.head.sibling.sibling, None)
         self.assertEqual(h1.head.sibling.child.key, 15)
         self.assertEqual(h1.head.sibling.child.child.child.key, 41)
+
+    def test_decrease_key(self):
+        # h1:
+        # 12 -> 7 -> 15
+        #      25    28-33
+        #            41
+        n12 = Node(12)
+        n7 = Node(7)
+        n25 = Node(25)
+        binomial_link(n25, n7)
+        n15 = Node(15)
+        n33 = Node(33)
+        n28 = Node(28)
+        n41 = Node(41)
+        binomial_link(n33, n15)
+        binomial_link(n41, n28)
+        binomial_link(n28, n15)
+        n12.sibling = n7
+        n7.sibling = n15
+        # h2:
+        # 18 -> 3
+        #      37
+        n18 = Node(18)
+        n3 = Node(3)
+        n37 = Node(37)
+        binomial_link(n37, n3)
+        n18.sibling = n3
+        h1 = BinomialHeap(n12)
+        h2 = BinomialHeap(n18)
+        h1.union(h2)
+        # new h1
+        # 12 ->  3
+        # 18    15-----7-37
+        #       28-33 25
+        #       41
+        h1.decrease_key(n41, 1)
+        # new h1
+        # 12 ->  1
+        # 18     3-----7-37
+        #       15-33 25
+        #       28
+        self.assertEqual(h1.head.sibling.key, 1)
+        self.assertEqual(h1.head.sibling.child.child.child.key, 28)
+        self.assertEqual(h1.head.sibling.child.child.key, 15)
+        self.assertEqual(h1.head.sibling.child.child.sibling.key, 33)
+        self.assertEqual(h1.head.sibling.child.key, 3)
+        self.assertEqual(h1.head.sibling.child.sibling.key, 7)
+        self.assertEqual(h1.head.sibling.child.sibling.child.key, 25)
+        self.assertEqual(h1.head.sibling.child.sibling.sibling.key, 37)
 
 
 if __name__ == '__main__':
