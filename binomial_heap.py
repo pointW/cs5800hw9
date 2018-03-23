@@ -160,8 +160,20 @@ class BinomialHeap:
         return x
 
     def delete(self, x):
+        """
+        delete node x from heap
+        :param x: node that will be deleted
+        """
         self.decrease_key(x, -sys.maxint)
         self.extract_min()
+
+    @staticmethod
+    def make_heap():
+        """
+        create a new heap with head=None
+        :return: new heap
+        """
+        return BinomialHeap()
 
     @staticmethod
     def decrease_key(x, k):
@@ -364,6 +376,35 @@ class TestHeapMethods(unittest.TestCase):
         self.assertEqual(h1.head.sibling.child.sibling.key, 7)
         self.assertEqual(h1.head.sibling.child.sibling.child.key, 25)
         self.assertEqual(h1.head.sibling.child.sibling.sibling.key, 37)
+
+    def test_delete(self):
+        # h1:
+        # 12 -> 7 -> 15
+        #      25    28-33
+        #            41
+        n12 = Node(12)
+        n7 = Node(7)
+        n25 = Node(25)
+        binomial_link(n25, n7)
+        n15 = Node(15)
+        n33 = Node(33)
+        n28 = Node(28)
+        n41 = Node(41)
+        binomial_link(n33, n15)
+        binomial_link(n41, n28)
+        binomial_link(n28, n15)
+        n12.sibling = n7
+        n7.sibling = n15
+        h1 = BinomialHeap(n12)
+        h1.delete(n25)
+        # new h1
+        # 7 -> 15
+        # 12   28-33
+        #      41
+        self.assertEqual(h1.head.key, 7)
+        self.assertEqual(h1.head.child.key, 12)
+        self.assertTrue(h1.head.child.child is None)
+        self.assertTrue(h1.head.child.sibling is None)
 
 
 if __name__ == '__main__':
