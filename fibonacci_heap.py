@@ -14,10 +14,6 @@ class Node:
         self.degree = 0
 
     def __str__(self):
-        """
-        show key and degree
-        :return:
-        """
         s = 'key:' + str(self.key)
         s += ', degree:' + str(self.degree)
         s += ', mark:' + str(self.mark)
@@ -27,12 +23,20 @@ class Node:
         return s
 
     def draw(self, height=0):
+        """
+        print the tree
+        :param height: int, current height for drawing
+        """
         for x in self.siblings():
             print '    ' * (height-1) + '+----' * (height > 0) + x.__str__()
             if x.child is not None:
                 x.child.draw(height+1)
 
     def size(self):
+        """
+        compute the size of self and siblings
+        :return: int, the size
+        """
         size = 1
         p = self.right
         while p is not self:
@@ -41,6 +45,11 @@ class Node:
         return size
 
     def find_key(self, k):
+        """
+        if key k is in self's siblings
+        :param k: int, key being looking for
+        :return: bool, True iff key k is in self's siblings
+        """
         if self.key == k:
             return True
         p = self.right
@@ -51,6 +60,10 @@ class Node:
         return False
 
     def insert(self, x):
+        """
+        insert x into self's sibling
+        :param x: Node
+        """
         if x is None:
             return
         x.left = self
@@ -59,6 +72,10 @@ class Node:
         self.right = x
 
     def concatenate(self, l):
+        """
+        concatenate l into self's sibling
+        :param l: Node, a node in l
+        """
         if l is None:
             return
         head1 = self
@@ -71,6 +88,10 @@ class Node:
         head2.left = tail1
 
     def children(self):
+        """
+        all children of self
+        :return: list[Node], all children of self
+        """
         children = []
         child = self.child
         if child is None:
@@ -83,6 +104,10 @@ class Node:
         return children
 
     def siblings(self):
+        """
+        all siblings of self
+        :return: list[Node]
+        """
         siblings = []
         siblings.append(self)
         p = self.right
@@ -98,6 +123,10 @@ class FibonacciHeap:
         self.n = 0 if self.min is None else 1
 
     def insert(self, x):
+        """
+        insert node x into root list, self.n += 1
+        :param x: Node
+        """
         if self.min is None:
             self.min = x
         else:
@@ -111,6 +140,10 @@ class FibonacciHeap:
         self.n += 1
 
     def union(self, h2):
+        """
+        unites self and h2
+        :param h2: FibonacciHeap, another heap that will be united with self
+        """
         if self.min is None:
             self.min = h2.min
             self.n = h2.n
@@ -121,6 +154,10 @@ class FibonacciHeap:
             self.n += h2.n
 
     def extract_min(self):
+        """
+        extract the node with minimum key, and reshape the heap
+        :return: Node, node with minimum key
+        """
         z = self.min
         if z is not None:
             # for x in z.children():
@@ -138,6 +175,9 @@ class FibonacciHeap:
         return z
 
     def consolidate(self):
+        """
+        reshape the heap such that there is only 1 tree for every degree
+        """
         a = [None for _ in range(self.max_degree())]
         for w in self.min.siblings():
             x = w
@@ -163,6 +203,11 @@ class FibonacciHeap:
                         self.min = a[i]
 
     def link(self, y, x):
+        """
+        insert y into x's children, unmark y
+        :param y: Node, child
+        :param x: Node, parent
+        """
         # if self.min.right is self.min:
         #     self.min = None
         # else:
@@ -180,9 +225,19 @@ class FibonacciHeap:
         y.mark = False
 
     def max_degree(self):
+        """
+        the max degree of current heap
+        :return: int
+        """
         return int(math.log(self.n, 1.62))
 
     def cut(self, x, y):
+        """
+        cut x out from y's children, add x into root list, unmark x
+        :param x: Node, previous y's child
+        :param y: Node, previous x's p
+        :return:
+        """
         if y.child.size() == 1:
             y.child = None
         else:
@@ -195,6 +250,11 @@ class FibonacciHeap:
         self.min.insert(x)
 
     def cascading_cut(self, y):
+        """
+        if y is not marked(previously no child of y is cut out), mark it(now 1 of y's child is cut)
+        if y is marked(previously 1 child is cut, now 2 of y's child is cut), cut y from y's parent
+        :param y: Node
+        """
         z = y.p
         if z is not None:
             if y.mark is False:
@@ -204,6 +264,12 @@ class FibonacciHeap:
                 self.cascading_cut(z)
 
     def decrease_key(self, x, k):
+        """
+        decrease the key of x into k
+        :param x: Node
+        :param k: int, new key
+        :raise Exception if k is greater than current key
+        """
         if k > x.key:
             raise Exception('new key is greater than current key')
         x.key = k
@@ -215,6 +281,10 @@ class FibonacciHeap:
             self.min = x
 
     def delete(self, x):
+        """
+        delete node x
+        :param x: Node
+        """
         self.decrease_key(x, -sys.maxint)
         self.extract_min()
 
