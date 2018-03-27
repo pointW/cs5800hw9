@@ -12,9 +12,27 @@ class Node:
         self.degree = 0
 
     def __str__(self):
-        return 'key=' + str(self.key) + ', degree=' + str(self.degree)
+        s = 'key=' + str(self.key)
+        s += ', degree=' + str(self.degree)
+        s += ', p:' + str(self.p.key) if self.p is not None else ', p:None'
+        s += ', sibling' + str(self.sibling.key) if self.sibling is not None else ', sibling:None'
+        return s
+
+    def draw(self, height=0):
+        """
+        print the tree
+        :param height: int, current height for drawing
+        """
+        print '    ' * (height - 1) + '+----' * (height > 0) + self.__str__()
+        if self.child is not None:
+            self.child.draw(height + 1)
+        if self.sibling is not None:
+            self.sibling.draw(height)
 
     def reverse_child(self):
+        """
+        reverse self.child
+        """
         p = None
         c_head = self.child
         if c_head:
@@ -43,6 +61,11 @@ def binomial_link(y, z):
 class BinomialHeap:
     def __init__(self, head=None):
         self.head = head
+        if head is not None:
+            p = head
+            while p:
+                p.p = None
+                p = p.sibling
 
     def minimum(self):
         """
@@ -167,6 +190,12 @@ class BinomialHeap:
         self.decrease_key(x, -sys.maxint)
         self.extract_min()
 
+    def draw(self):
+        """
+        call draw on self.head
+        """
+        self.head.draw()
+
     @staticmethod
     def make_heap():
         """
@@ -255,6 +284,7 @@ class TestHeapMethods(unittest.TestCase):
         # 18    15-----7-37
         #       28-33 25
         #       41
+        h1.draw()
         self.assertEqual(h1.head.degree, 1)
         self.assertEqual(h1.head.sibling.degree, 3)
         head = h1.head
@@ -397,6 +427,7 @@ class TestHeapMethods(unittest.TestCase):
         n7.sibling = n15
         h1 = BinomialHeap(n12)
         h1.delete(n25)
+        # h1.head.draw()
         # new h1
         # 7 -> 15
         # 12   28-33
