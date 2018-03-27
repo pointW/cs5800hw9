@@ -14,7 +14,23 @@ class Node:
         self.degree = 0
 
     def __str__(self):
-        return 'key:' + str(self.key) + ', degree' + str(self.degree)
+        """
+        show key and degree
+        :return:
+        """
+        s = 'key:' + str(self.key)
+        s += ', degree:' + str(self.degree)
+        s += ', mark:' + str(self.mark)
+        s += ', p:' + str(self.p.key) if self.p is not None else ', p:None'
+        s += ', left:' + str(self.left.key)
+        s += ', right:' + str(self.right.key)
+        return s
+
+    def draw(self, height=0):
+        for x in self.siblings():
+            print '    ' * (height-1) + '+----' * (height > 0) + x.__str__()
+            if x.child is not None:
+                x.child.draw(height+1)
 
     def size(self):
         size = 1
@@ -150,6 +166,8 @@ class FibonacciHeap:
         # if self.min.right is self.min:
         #     self.min = None
         # else:
+        if y.key == 39 and x.key == 18:
+            aaa = 1
         y.left.right = y.right
         y.right.left = y.left
         if x.child is not None:
@@ -255,8 +273,13 @@ class Test(unittest.TestCase):
         n18.insert(n52)
         n52.insert(n38)
         n3.child = n18
+        n18.p = n3
+        n52.p = n3
+        n38.p = n3
         n18.child = n39
+        n39.p = n18
         n38.child = n41
+        n41.p = n38
         n3.degree = 3
         n18.degree = 1
         n38.degree = 1
@@ -264,12 +287,16 @@ class Test(unittest.TestCase):
         n39.mark = True
 
         n17.child = n30
+        n30.p = n17
         n17.degree = 1
 
         n26.child = n35
+        n35.p = n26
         n26.degree = 1
         n26.insert(n46)
         n24.child = n26
+        n26.p = n24
+        n46.p = n24
         n24.degree = 2
         n26.mark = True
 
@@ -282,9 +309,10 @@ class Test(unittest.TestCase):
         h.n = 15
 
         x = h.extract_min()
+        h.min.draw()
         self.assertEqual(h.min.key, 7)
-        self.assertEqual(h.min.degree, 3)
-        self.assertEqual(h.min.right.degree, 2)
+        self.assertEqual(h.min.degree, 2)
+        self.assertEqual(h.min.right.degree, 3)
         self.assertEqual(h.min.right.right.degree, 1)
 
 
